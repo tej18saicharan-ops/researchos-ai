@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ResearchOS AI — Premium Agentic Web Research OS</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <!-- CSS Stylesheet -->
+  <link rel="stylesheet" href="/style.css">
+  
+  <!-- CDNs for Premium Libraries -->
+  <!-- GSAP for smooth animations -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <!-- Chart.js for data visualization -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- html2pdf for exporting to PDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body class="bg-[#050816] text-white font-sans overflow-hidden antialiased">
+
+  <!-- Aurora Background Effects -->
+  <div class="aurora-container">
+    <div class="aurora-blob blob-purple"></div>
+    <div class="aurora-blob blob-cyan"></div>
+    <div class="aurora-blob blob-green"></div>
+    <div class="noise-overlay"></div>
+  </div>
+
+  <!-- Interactive Canvas Particle Engine -->
+  <canvas id="particle-canvas" class="fixed inset-0 pointer-events-none z-0"></canvas>
+  <div id="cursor-glow" class="cursor-glow"></div>
+
+  <!-- 1. Startup Loader Screen -->
+  <div id="startup-screen" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#050816]">
+    <div class="startup-logo-container flex flex-col items-center">
+      <div class="logo-particle-build" id="logo-build">
+        <svg width="80" height="80" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path class="logo-path-1" d="M20 50 C20 33, 33 20, 50 20 C67 20, 80 33, 80 50 C80 67, 67 80, 50 80 C33 80, 20 67, 20 50 Z" stroke="url(#logo-grad-1)" stroke-width="6" stroke-linecap="round" stroke-dasharray="300" stroke-dashoffset="300" />
+          <path class="logo-path-2" d="M35 50 C35 41, 41 35, 50 35 C59 35, 65 41, 65 50 C65 59, 59 65, 50 65 C41 65, 35 59, 35 50 Z" stroke="url(#logo-grad-2)" stroke-width="4" stroke-linecap="round" stroke-dasharray="200" stroke-dashoffset="200" />
+          <circle class="logo-core" cx="50" cy="50" r="8" fill="#00FFA3" opacity="0" />
+          <defs>
+            <linearGradient id="logo-grad-1" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#7C4DFF" />
+              <stop offset="100%" stop-color="#00E5FF" />
+            </linearGradient>
+            <linearGradient id="logo-grad-2" x1="0" y1="1" x2="1" y2="0">
+              <stop offset="0%" stop-color="#00E5FF" />
+              <stop offset="100%" stop-color="#00FFA3" />
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+      <h1 class="text-2xl font-display font-semibold tracking-wider mt-6 bg-gradient-to-r from-white via-[#00E5FF] to-[#7C4DFF] bg-clip-text text-transparent opacity-0 transform translate-y-4" id="startup-title">
+        RESEARCHOS AI
+      </h1>
+      <p class="text-xs text-slate-500 font-mono tracking-widest mt-2 opacity-0" id="startup-subtitle">INITIALIZING CORE AGENT SYSTEMS...</p>
+    </div>
+  </div>
+
+  <!-- Main Grid App Shell -->
+  <div id="app-shell" class="relative w-screen h-screen flex flex-col z-10 hidden">
+    
+    <!-- Top Navigation Bar -->
+    <header class="navbar flex items-center justify-between px-6 h-16 border-b border-white/5 bg-[#050816]/40 backdrop-blur-xl z-20">
+      <!-- Left Logo -->
+      <div class="flex items-center space-x-3 cursor-pointer group" id="nav-logo-btn">
+        <div class="relative w-8 h-8 flex items-center justify-center rounded-lg bg-white/5 border border-white/10 group-hover:border-primary/50 transition-all duration-300">
+          <i data-lucide="orbit" class="w-5 h-5 text-[#00E5FF] group-hover:rotate-45 transition-transform duration-500"></i>
+          <span class="absolute top-0.5 right-0.5 w-2 h-2 bg-[#00FFA3] rounded-full animate-pulse"></span>
+        </div>
+        <span class="font-display font-bold text-lg tracking-tight bg-gradient-to-r from-white to-[#00E5FF] bg-clip-text text-transparent">
+          ResearchOS <span class="text-xs font-mono font-normal px-1.5 py-0.5 rounded border border-primary/20 bg-primary/10 text-primary ml-1">AI</span>
+        </span>
+      </div>
+
+      <!-- Center Nav Links -->
+      <nav class="hidden md:flex items-center space-x-1 bg-white/5 border border-white/5 p-1 rounded-full backdrop-blur-md">
+        <button class="nav-link active" data-tab="research">
+          <i data-lucide="search" class="w-4 h-4 mr-2"></i>Research
+        </button>
+        <button class="nav-link" data-tab="history">
+          <i data-lucide="history" class="w-4 h-4 mr-2"></i>History
+        </button>
+        <button class="nav-link" data-tab="saved">
+          <i data-lucide="bookmark" class="w-4 h-4 mr-2"></i>Saved Reports
+        </button>
+        <button class="nav-link" data-tab="analytics">
+          <i data-lucide="bar-chart-3" class="w-4 h-4 mr-2"></i>Analytics
+        </button>
+      </nav>
+
+      <!-- Right System Badges & Controls -->
+      <div class="flex items-center space-x-3">
+        <!-- API Status -->
+        <div class="hidden sm:flex items-center px-3 py-1 rounded-full bg-white/5 border border-white/5 text-xs font-mono text-slate-400 cursor-pointer" id="api-status-badge">
+          <span class="w-1.5 h-1.5 rounded-full bg-[#00FFA3] mr-2 animate-ping"></span>
+          <span>Context.dev: Connected</span>
+        </div>
+        
+        <!-- Toggle Settings -->
+        <button class="icon-btn hover:text-primary transition-colors" id="settings-toggle-btn" title="API Settings">
+          <i data-lucide="sliders" class="w-5 h-5"></i>
+        </button>
+        
+        <!-- Toggle Theme -->
+        <button class="icon-btn hover:text-[#00E5FF] transition-colors" id="theme-toggle-btn" title="Toggle Theme Mode">
+          <i data-lucide="sun" class="w-5 h-5 hidden dark:block"></i>
+          <i data-lucide="moon" class="w-5 h-5 block dark:hidden"></i>
+        </button>
+
+        <!-- Profile -->
+        <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-primary to-secondary p-0.5 cursor-pointer hover:scale-105 transition-transform" id="profile-avatar">
+          <div class="w-full h-full rounded-full bg-[#050816] flex items-center justify-center text-[10px] font-mono font-bold text-white">
+            OS
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Workspace Area (Dynamic Views) -->
+    <main class="flex-1 flex overflow-hidden relative">
+
+      <!-- View 1: Hero Search Screen (Default View) -->
+      <section id="hero-view" class="absolute inset-0 flex flex-col items-center justify-center px-6 overflow-y-auto z-10">
+        <div class="max-w-3xl w-full text-center space-y-8 pb-12">
+          
+          <!-- Hero Headlines -->
+          <div class="space-y-4">
+            <span class="inline-flex items-center px-3 py-1 rounded-full border border-primary/20 bg-primary/10 text-primary text-xs font-mono tracking-wider uppercase animate-pulse">
+              <i data-lucide="sparkles" class="w-3.5 h-3.5 mr-1.5"></i>Agentic Web Intelligence OS
+            </span>
+            <h1 class="text-4xl md:text-6xl font-display font-bold tracking-tight text-white leading-tight">
+              Research the Internet <br class="hidden sm:inline">
+              Like an <span class="bg-gradient-to-r from-primary via-secondary to-[#00FFA3] bg-clip-text text-transparent">AI Research Analyst</span>
+            </h1>
+            <p class="text-slate-400 text-lg md:text-xl font-light max-w-xl mx-auto">
+              Search across hundreds of trusted websites, verify contradictory statistics, and compile one comprehensive report dynamically.
+            </p>
+          </div>
+
+          <!-- Main Floating Search Box -->
+          <div class="search-box-container p-1 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-2xl shadow-[0_0_50px_rgba(124,77,255,0.15)] focus-within:border-primary/50 focus-within:shadow-[0_0_80px_rgba(124,77,255,0.25)] transition-all duration-500 max-w-2xl mx-auto">
+            <form id="search-form" class="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 p-2">
+              <div class="flex-1 flex items-center px-3 space-x-2">
+                <i data-lucide="search" class="w-5 h-5 text-slate-400"></i>
+                <input 
+                  type="text" 
+                  id="search-input" 
+                  placeholder="How many AirPods were sold this year?" 
+                  class="w-full bg-transparent border-none outline-none text-white text-base py-2 placeholder-slate-500 font-sans"
+                  autocomplete="off"
+                  required
+                />
+              </div>
+              <div class="flex items-center justify-between sm:justify-end px-3 sm:px-0 space-x-3 border-t sm:border-t-0 border-white/5 pt-2 sm:pt-0">
+                <!-- Action Tools -->
+                <div class="flex items-center space-x-2">
+                  <button type="button" class="tool-icon-btn" title="Voice Input" id="voice-input-btn">
+                    <i data-lucide="mic" class="w-4 h-4"></i>
+                  </button>
+                  <button type="button" class="tool-icon-btn" title="Image Search" id="image-search-btn">
+                    <i data-lucide="image" class="w-4 h-4"></i>
+                  </button>
+                  <button type="button" class="tool-icon-btn" title="Attach Document" id="attach-file-btn">
+                    <i data-lucide="paperclip" class="w-4 h-4"></i>
+                  </button>
+                </div>
+                
+                <!-- Submit -->
+                <button type="submit" class="submit-search-btn flex items-center justify-center px-5 py-2.5 rounded-xl bg-gradient-to-r from-primary to-secondary hover:brightness-110 active:scale-95 transition-all text-sm font-semibold tracking-wide text-white">
+                  <span>Analyze</span>
+                  <i data-lucide="arrow-right" class="w-4 h-4 ml-1.5 transition-transform group-hover:translate-x-1"></i>
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Popular Searches chips -->
+          <div class="popular-searches space-y-3">
+            <span class="text-xs font-mono text-slate-500 uppercase tracking-widest">Try asking</span>
+            <div class="flex flex-wrap justify-center gap-2 max-w-xl mx-auto">
+              <button class="popular-chip" data-query="How many AirPods were sold in 2024?">
+                AirPods units sold 2024
+              </button>
+              <button class="popular-chip" data-query="Tesla revenue by country 2025">
+                Tesla revenue by country
+              </button>
+              <button class="popular-chip" data-query="Latest AI startups in India and their valuations">
+                AI startups India
+              </button>
+              <button class="popular-chip" data-query="NVIDIA market share in AI chips compared to competitors">
+                NVIDIA market share
+              </button>
+              <button class="popular-chip" data-query="Average salary of software engineers in Germany 2025">
+                Software engineer salaries Germany
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- View 2: AI Research Progress Panel -->
+      <section id="research-loading-view" class="absolute inset-0 flex flex-col items-center justify-center bg-[#050816]/95 backdrop-blur-md z-15 hidden">
+        <div class="max-w-md w-full text-center space-y-8 px-6">
+          
+          <!-- Animated Brain Orbit Rings -->
+          <div class="relative w-36 h-36 mx-auto flex items-center justify-center">
+            <!-- Rotating Circles -->
+            <div class="absolute inset-0 border border-primary/20 rounded-full animate-[spin_8s_linear_infinite]"></div>
+            <div class="absolute inset-2 border border-dashed border-secondary/30 rounded-full animate-[spin_12s_linear_infinite_reverse]"></div>
+            <div class="absolute inset-6 border border-accent/20 rounded-full animate-[spin_6s_linear_infinite]"></div>
+            
+            <!-- Inner AI Brain Pulse -->
+            <div class="relative w-16 h-16 rounded-full bg-gradient-to-tr from-primary via-secondary to-accent flex items-center justify-center shadow-[0_0_40px_rgba(0,229,255,0.4)] animate-pulse">
+              <i data-lucide="cpu" class="w-8 h-8 text-white animate-spin-slow"></i>
+            </div>
+            
+            <!-- Floating nodes -->
+            <span class="absolute top-0 left-1/2 w-2 h-2 bg-primary rounded-full animate-ping"></span>
+            <span class="absolute bottom-4 left-4 w-2 h-2 bg-secondary rounded-full animate-ping delay-500"></span>
+            <span class="absolute bottom-4 right-4 w-2 h-2 bg-accent rounded-full animate-ping delay-1000"></span>
+          </div>
+
+          <div class="space-y-2">
+            <h2 class="text-2xl font-display font-semibold tracking-wide" id="loading-header">Formulating Search Intent</h2>
+            <div class="progress-bar-bg h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+              <div id="loading-progress-bar" class="progress-bar-fill h-full w-[10%] bg-gradient-to-r from-primary via-secondary to-accent rounded-full transition-all duration-300"></div>
+            </div>
+            <div class="flex justify-between items-center text-xs font-mono text-slate-500">
+              <span id="loading-percentage">10% Completed</span>
+              <span id="loading-timer">Elapsed: 0s</span>
+            </div>
+          </div>
+
+          <!-- Vertical list of search stages -->
+          <div class="research-stages text-left space-y-3 bg-white/5 border border-white/5 p-5 rounded-2xl backdrop-blur-md max-w-sm mx-auto">
+            <div class="stage-item flex items-center justify-between text-slate-400 font-mono text-xs" data-stage="intent">
+              <span class="flex items-center"><i data-lucide="message-square" class="w-4 h-4 mr-2.5 text-primary"></i>Generating Search Intent</span>
+              <span class="stage-status"><i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i></span>
+            </div>
+            <div class="stage-item flex items-center justify-between text-slate-500 font-mono text-xs" data-stage="search">
+              <span class="flex items-center"><i data-lucide="search" class="w-4 h-4 mr-2.5"></i>Searching Context.dev</span>
+              <span class="stage-status"><i data-lucide="minus" class="w-3.5 h-3.5"></i></span>
+            </div>
+            <div class="stage-item flex items-center justify-between text-slate-500 font-mono text-xs" data-stage="scrape">
+              <span class="flex items-center"><i data-lucide="file-text" class="w-4 h-4 mr-2.5"></i>Scraping Sources</span>
+              <span class="stage-status"><i data-lucide="minus" class="w-3.5 h-3.5"></i></span>
+            </div>
+            <div class="stage-item flex items-center justify-between text-slate-500 font-mono text-xs" data-stage="extract">
+              <span class="flex items-center"><i data-lucide="database" class="w-4 h-4 mr-2.5"></i>Extracting Metrics</span>
+              <span class="stage-status"><i data-lucide="minus" class="w-3.5 h-3.5"></i></span>
+            </div>
+            <div class="stage-item flex items-center justify-between text-slate-500 font-mono text-xs" data-stage="cross">
+              <span class="flex items-center"><i data-lucide="shield-check" class="w-4 h-4 mr-2.5"></i>Fact Cross Validation</span>
+              <span class="stage-status"><i data-lucide="minus" class="w-3.5 h-3.5"></i></span>
+            </div>
+            <div class="stage-item flex items-center justify-between text-slate-500 font-mono text-xs" data-stage="report">
+              <span class="flex items-center"><i data-lucide="pen-tool" class="w-4 h-4 mr-2.5"></i>Synthesizing Final Report</span>
+              <span class="stage-status"><i data-lucide="minus" class="w-3.5 h-3.5"></i></span>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- View 3: Interactive Results Workspace -->
+      <section id="results-workspace" class="absolute inset-0 flex overflow-hidden hidden z-10">
+        
+        <!-- Left Sidebar: Search History / Saved Reports -->
+        <aside class="sidebar-left w-64 border-r border-white/5 bg-[#050816]/70 flex flex-col h-full flex-shrink-0 hidden lg:flex">
+          <!-- Workspace Navigator -->
+          <div class="p-4 border-b border-white/5">
+            <button class="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-colors text-sm font-semibold text-slate-200" id="cmd-palette-btn">
+              <span class="flex items-center"><i data-lucide="command" class="w-4 h-4 mr-2 text-primary"></i>Command Palette</span>
+              <kbd class="text-[10px] font-mono text-slate-500 border border-white/10 px-1.5 py-0.5 rounded bg-white/5">Ctrl+K</kbd>
+            </button>
+          </div>
+
+          <!-- Sections list -->
+          <div class="flex-1 overflow-y-auto p-4 space-y-6">
+            <!-- Navigation Shortcuts -->
+            <div class="space-y-1">
+              <h4 class="px-3 text-[10px] font-mono text-slate-500 uppercase tracking-wider mb-2">Workspace Navigation</h4>
+              <a href="#section-summary" class="workspace-nav-item active"><i data-lucide="file-text" class="w-4 h-4 mr-2.5"></i>Summary</a>
+              <a href="#section-statistics" class="workspace-nav-item"><i data-lucide="hash" class="w-4 h-4 mr-2.5"></i>Statistics</a>
+              <a href="#section-charts" class="workspace-nav-item"><i data-lucide="pie-chart" class="w-4 h-4 mr-2.5"></i>Visual Charts</a>
+              <a href="#section-gallery" class="workspace-nav-item"><i data-lucide="images" class="w-4 h-4 mr-2.5"></i>Image Gallery</a>
+              <a href="#section-comparison" class="workspace-nav-item"><i data-lucide="git-compare" class="w-4 h-4 mr-2.5"></i>Source Compare</a>
+              <a href="#section-insights" class="workspace-nav-item"><i data-lucide="lightbulb" class="w-4 h-4 mr-2.5"></i>AI Insights</a>
+              <a href="#section-references" class="workspace-nav-item"><i data-lucide="link" class="w-4 h-4 mr-2.5"></i>References</a>
+            </div>
+
+            <!-- Recent Searches History -->
+            <div class="space-y-2">
+              <h4 class="px-3 text-[10px] font-mono text-slate-500 uppercase tracking-wider">Recent Searches</h4>
+              <div class="space-y-1" id="history-list">
+                <!-- Injected via JavaScript -->
+              </div>
+            </div>
+
+            <!-- Collections -->
+            <div class="space-y-2">
+              <h4 class="px-3 text-[10px] font-mono text-slate-500 uppercase tracking-wider">Collections</h4>
+              <div class="space-y-1">
+                <a href="#" class="workspace-nav-item"><i data-lucide="folder" class="w-4 h-4 mr-2.5 text-yellow-500"></i>Market Research</a>
+                <a href="#" class="workspace-nav-item"><i data-lucide="folder" class="w-4 h-4 mr-2.5 text-cyan-500"></i>Tesla Financials</a>
+                <a href="#" class="workspace-nav-item"><i data-lucide="folder" class="w-4 h-4 mr-2.5 text-purple-500"></i>AI Technology</a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Actions -->
+          <div class="p-4 border-t border-white/5 flex items-center justify-between">
+            <button class="flex items-center text-xs font-mono text-slate-500 hover:text-white transition-colors" id="clear-history-btn">
+              <i data-lucide="trash-2" class="w-3.5 h-3.5 mr-1.5"></i>Clear History
+            </button>
+            <span class="text-[10px] font-mono text-slate-600">v1.2.0-beta</span>
+          </div>
+        </aside>
+
+        <!-- Main Content Area: Compiled Report -->
+        <div class="flex-1 flex flex-col h-full overflow-hidden bg-[#050816]/30">
+          
+          <!-- Workspace Header -->
+          <div class="flex items-center justify-between px-6 py-4 border-b border-white/5 bg-[#050816]/40 backdrop-blur-md z-10">
+            <div class="flex items-center space-x-3 overflow-hidden">
+              <button class="p-2 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 text-slate-300 lg:hidden" id="left-sidebar-toggle-btn">
+                <i data-lucide="menu" class="w-4 h-4"></i>
+              </button>
+              <h2 id="report-title" class="font-display font-semibold text-lg text-white truncate max-w-md md:max-w-lg">Tesla Revenue By Country</h2>
+            </div>
+
+            <!-- Export / Share Actions -->
+            <div class="flex items-center space-x-2">
+              <button class="action-outline-btn" id="export-pdf-btn">
+                <i data-lucide="file-text" class="w-4 h-4 mr-1.5 text-red-400"></i>Export PDF
+              </button>
+              <button class="action-outline-btn hidden md:flex" id="export-md-btn">
+                <i data-lucide="file-code" class="w-4 h-4 mr-1.5 text-purple-400"></i>Export MD
+              </button>
+              <button class="action-outline-btn" id="copy-citations-btn" title="Copy Citations to Clipboard">
+                <i data-lucide="clipboard" class="w-4 h-4 mr-1.5 text-[#00FFA3]"></i>Copy Citations
+              </button>
+              <button class="action-solid-btn" id="share-report-btn">
+                <i data-lucide="share-2" class="w-4 h-4 mr-1.5"></i>Share
+              </button>
+            </div>
+          </div>
+
+          <!-- Report Container (Scrollable Report View) -->
+          <div class="flex-1 overflow-y-auto px-6 py-6 space-y-8 scroll-smooth" id="report-content-body">
+            
+            <!-- Section: Executive Summary -->
+            <section id="section-summary" class="scroll-mt-6">
+              <div class="glass-card p-6 md:p-8 relative overflow-hidden group">
+                <div class="absolute -top-24 -right-24 w-48 h-48 bg-primary/10 rounded-full blur-3xl group-hover:bg-primary/20 transition-colors duration-500"></div>
+                <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                  <div class="space-y-4 flex-1">
+                    <div class="flex items-center space-x-2">
+                      <span class="px-2.5 py-0.5 rounded-full border border-primary/30 bg-primary/10 text-primary text-[10px] font-mono uppercase tracking-wider">Synthesis Summary</span>
+                      <span class="w-1.5 h-1.5 bg-[#00FFA3] rounded-full"></span>
+                      <span class="text-xs text-slate-400 font-mono" id="sources-count-badge">Based on 12 crawled websites</span>
+                    </div>
+                    <p id="summary-text" class="text-slate-200 text-lg font-light leading-relaxed">
+                      Tesla's global revenue in recent fiscal years has exhibited significant geolocalized performance, showing robust resilience in the United States and China, which continue to compose over 70% of total revenue. European and APAC markets represent growing segments, though regulatory shifts and local EV subsidies introduce cyclical volatility in these regions.
+                    </p>
+                  </div>
+                  
+                  <!-- Circular Confidence Score Widget -->
+                  <div class="flex-shrink-0 flex flex-col items-center justify-center p-4 bg-white/5 border border-white/10 rounded-2xl backdrop-blur-md w-36 h-36 relative group/score">
+                    <!-- Circle SVG -->
+                    <svg class="w-24 h-24 transform -rotate-90">
+                      <circle cx="48" cy="48" r="40" stroke="rgba(255,255,255,0.05)" stroke-width="6" fill="transparent" />
+                      <circle id="confidence-circle" cx="48" cy="48" r="40" stroke="#00FFA3" stroke-width="6" fill="transparent" stroke-dasharray="251.2" stroke-dashoffset="10" stroke-linecap="round" class="transition-all duration-1000 ease-out" />
+                    </svg>
+                    <div class="absolute inset-0 flex flex-col items-center justify-center">
+                      <span id="confidence-score-val" class="font-display font-bold text-2xl text-white">96%</span>
+                      <span class="text-[9px] font-mono text-slate-500 uppercase tracking-widest mt-1">Confidence</span>
+                    </div>
+                    <div class="absolute bottom-1 text-[8px] font-mono text-[#00FFA3] opacity-0 group-hover/score:opacity-100 transition-opacity">Very High Authority</div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- Section: Key Findings & Stats Grid -->
+            <section id="section-statistics" class="scroll-mt-6 space-y-4">
+              <h3 class="text-xs font-mono text-slate-500 uppercase tracking-widest flex items-center">
+                <i data-lucide="hash" class="w-4 h-4 mr-1.5 text-primary"></i>Key Findings & Statistics
+              </h3>
+              
+              <!-- Floating Stats Grid -->
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="stats-grid">
+                <!-- Card 1 -->
+                <div class="stats-card p-5 space-y-2">
+                  <span class="text-xs font-mono text-slate-500 flex items-center justify-between">
+                    Total Revenue
+                    <i data-lucide="trending-up" class="w-3.5 h-3.5 text-[#00FFA3]"></i>
+                  </span>
+                  <div class="text-2xl md:text-3xl font-mono font-bold tracking-tight bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent" id="stat-revenue">
+                    $96.77B
+                  </div>
+                  <span class="text-[10px] text-[#00FFA3] font-mono">+18.7% YoY Growth</span>
+                </div>
+                <!-- Card 2 -->
+                <div class="stats-card p-5 space-y-2">
+                  <span class="text-xs font-mono text-slate-500 flex items-center justify-between">
+                    US Market Share
+                    <i data-lucide="shield" class="w-3.5 h-3.5 text-primary"></i>
+                  </span>
+                  <div class="text-2xl md:text-3xl font-mono font-bold tracking-tight" id="stat-us-share">
+                    48.2%
+                  </div>
+                  <span class="text-[10px] text-slate-400 font-mono">Dominant segment</span>
+                </div>
+                <!-- Card 3 -->
+                <div class="stats-card p-5 space-y-2">
+                  <span class="text-xs font-mono text-slate-500 flex items-center justify-between">
+                    China Segment
+                    <i data-lucide="flag" class="w-3.5 h-3.5 text-secondary"></i>
+                  </span>
+                  <div class="text-2xl md:text-3xl font-mono font-bold tracking-tight" id="stat-china-revenue">
+                    $21.75B
+                  </div>
+                  <span class="text-[10px] text-[#00E5FF] font-mono">Gigafactory Shanghai</span>
+                </div>
+                <!-- Card 4 -->
+                <div class="stats-card p-5 space-y-2">
+                  <span class="text-xs font-mono text-slate-500 flex items-center justify-between">
+                    Data Sources
+                    <i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-accent"></i>
+                  </span>
+                  <div class="text-2xl md:text-3xl font-mono font-bold tracking-tight" id="stat-sources">
+                    12
+                  </div>
+                  <span class="text-[10px] text-[#00FFA3] font-mono">100% Cross-checked</span>
+                </div>
+              </div>
+
+              <!-- Bullet Points Findings -->
+              <div class="glass-card p-6">
+                <ul class="space-y-3 text-slate-300 font-light text-sm" id="key-findings-list">
+                  <li class="flex items-start">
+                    <span class="w-1.5 h-1.5 rounded-full bg-primary mt-2 mr-3 flex-shrink-0"></span>
+                    <span>The United States remains Tesla's largest single country market, accounting for approximately $45.2 billion in revenue, driven by strong sales of Model Y and Model 3.</span>
+                  </li>
+                  <li class="flex items-start">
+                    <span class="w-1.5 h-1.5 rounded-full bg-secondary mt-2 mr-3 flex-shrink-0"></span>
+                    <span>China represents Tesla's second-largest market, contributing $21.75 billion, supported by the hyper-efficient localization and production scale of Gigafactory Shanghai.</span>
+                  </li>
+                  <li class="flex items-start">
+                    <span class="w-1.5 h-1.5 rounded-full bg-accent mt-2 mr-3 flex-shrink-0"></span>
+                    <span>European markets, compiled collectively, generated $18.4 billion, with Germany and Norway acting as major growth drivers despite regulatory shifts.</span>
+                  </li>
+                </ul>
+              </div>
+            </section>
+
+            <!-- Section: Charts Grid -->
+            <section id="section-charts" class="scroll-mt-6 space-y-4">
+              <h3 class="text-xs font-mono text-slate-500 uppercase tracking-widest flex items-center">
+                <i data-lucide="pie-chart" class="w-4 h-4 mr-1.5 text-secondary"></i>Interactive Charts
+              </h3>
+              
+              <!-- Charts Grid Layout -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Chart 1: Revenue breakdown by Region -->
+                <div class="glass-card p-5 space-y-4">
+                  <div class="flex items-center justify-between border-b border-white/5 pb-3">
+                    <h4 class="text-sm font-semibold text-white">Geographic Revenue Distribution</h4>
+                    <span class="text-[10px] font-mono text-[#00E5FF] px-2 py-0.5 rounded border border-[#00E5FF]/20 bg-[#00E5FF]/10">Pie Chart</span>
+                  </div>
+                  <div class="chart-canvas-container relative h-64">
+                    <canvas id="region-pie-chart"></canvas>
+                  </div>
+                </div>
+
+                <!-- Chart 2: Revenue Trend Line -->
+                <div class="glass-card p-5 space-y-4">
+                  <div class="flex items-center justify-between border-b border-white/5 pb-3">
+                    <h4 class="text-sm font-semibold text-white">Fiscal Growth Trajectory</h4>
+                    <span class="text-[10px] font-mono text-primary px-2 py-0.5 rounded border border-primary/20 bg-primary/10">Trend Line</span>
+                  </div>
+                  <div class="chart-canvas-container relative h-64">
+                    <canvas id="growth-line-chart"></canvas>
+                  </div>
+                </div>
+
+                <!-- Chart 3: Market Share comparisons -->
+                <div class="glass-card p-5 space-y-4">
+                  <div class="flex items-center justify-between border-b border-white/5 pb-3">
+                    <h4 class="text-sm font-semibold text-white">Market Share Breakdown vs Competitors</h4>
+                    <span class="text-[10px] font-mono text-accent px-2 py-0.5 rounded border border-accent/20 bg-accent/10">Bar Chart</span>
+                  </div>
+                  <div class="chart-canvas-container relative h-64">
+                    <canvas id="share-bar-chart"></canvas>
+                  </div>
+                </div>
+
+                <!-- Chart 4: Segment YoY Comparisons -->
+                <div class="glass-card p-5 space-y-4">
+                  <div class="flex items-center justify-between border-b border-white/5 pb-3">
+                    <h4 class="text-sm font-semibold text-white">Segment Growth Dynamics (YoY)</h4>
+                    <span class="text-[10px] font-mono text-[#FFB800] px-2 py-0.5 rounded border border-[#FFB800]/20 bg-[#FFB800]/10">Radar Chart</span>
+                  </div>
+                  <div class="chart-canvas-container relative h-64">
+                    <canvas id="growth-radar-chart"></canvas>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- Section: Masonry Image Gallery -->
+            <section id="section-gallery" class="scroll-mt-6 space-y-4">
+              <h3 class="text-xs font-mono text-slate-500 uppercase tracking-widest flex items-center">
+                <i data-lucide="images" class="w-4 h-4 mr-1.5 text-accent"></i>Visual Gallery
+              </h3>
+              
+              <!-- Pinterest Masonry Layout -->
+              <div class="masonry-grid" id="masonry-gallery">
+                <!-- JavaScript will inject images -->
+                <div class="masonry-item">
+                  <img src="https://images.unsplash.com/photo-1617788138017-80ad40651399?auto=format&fit=crop&w=600&q=80" alt="Tesla factory" class="rounded-xl overflow-hidden hover:scale-102 transition-transform duration-300 cursor-pointer" onclick="openLightbox(this.src, 'Gigafactory Shanghai Production Line')">
+                  <div class="masonry-caption">
+                    <span class="source-badge">Bloomberg</span>
+                    <p class="caption-text">Gigafactory Shanghai Production Line</p>
+                  </div>
+                </div>
+                <div class="masonry-item">
+                  <img src="https://images.unsplash.com/photo-1563720223185-11003d516935?auto=format&fit=crop&w=600&q=80" alt="Tesla Model Y" class="rounded-xl overflow-hidden hover:scale-102 transition-transform duration-300 cursor-pointer" onclick="openLightbox(this.src, 'Tesla Model Y Delivery Event')">
+                  <div class="masonry-caption">
+                    <span class="source-badge">Tesla IR</span>
+                    <p class="caption-text">Tesla Model Y Delivery Event</p>
+                  </div>
+                </div>
+                <div class="masonry-item">
+                  <img src="https://images.unsplash.com/photo-1536640712247-c57f6ff9e264?auto=format&fit=crop&w=600&q=80" alt="Tesla supercharger" class="rounded-xl overflow-hidden hover:scale-102 transition-transform duration-300 cursor-pointer" onclick="openLightbox(this.src, 'Tesla Supercharging Infrastructure network')">
+                  <div class="masonry-caption">
+                    <span class="source-badge">Reuters</span>
+                    <p class="caption-text">Tesla Supercharging Infrastructure network</p>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- Section: Source Comparisons & Timeline -->
+            <section id="section-comparison" class="scroll-mt-6 space-y-6">
+              <h3 class="text-xs font-mono text-slate-500 uppercase tracking-widest flex items-center">
+                <i data-lucide="git-compare" class="w-4 h-4 mr-1.5 text-primary"></i>Source Comparison & Discrepancies
+              </h3>
+              
+              <!-- Comparison Table -->
+              <div class="glass-card overflow-hidden">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left border-collapse">
+                    <thead>
+                      <tr class="border-b border-white/5 bg-white/2.5 text-xs font-mono text-slate-400">
+                        <th class="p-4">Source Authority</th>
+                        <th class="p-4">Reported Metric</th>
+                        <th class="p-4">Reported Value</th>
+                        <th class="p-4">Report Date</th>
+                        <th class="p-4">Confidence</th>
+                        <th class="p-4 text-right">Details</th>
+                      </tr>
+                    </thead>
+                    <tbody id="comparison-table-body" class="text-sm font-sans divide-y divide-white/5 text-slate-300">
+                      <!-- JavaScript Injected Rows -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- Important Milestones Timeline -->
+              <div class="glass-card p-6 space-y-4">
+                <h4 class="text-sm font-semibold text-white">Historical Revenue Milestones</h4>
+                <div class="relative pl-6 border-l-2 border-primary/20 space-y-6" id="timeline-container">
+                  <!-- Timeline Node 1 -->
+                  <div class="relative">
+                    <span class="absolute -left-[31px] top-1 w-4 h-4 rounded-full border-4 border-[#050816] bg-[#00FFA3] ring-4 ring-primary/10"></span>
+                    <div class="space-y-1">
+                      <div class="flex items-center space-x-2">
+                        <span class="text-xs font-mono text-slate-500">2025</span>
+                        <span class="px-2 py-0.5 rounded bg-primary/15 text-primary text-[10px] font-mono">Projected Cap</span>
+                      </div>
+                      <h5 class="text-sm font-medium text-white">Global Revenue Crosses $105B Estimate</h5>
+                      <p class="text-xs text-slate-400">Consolidated reports project Tesla crossing the $100B milestone on increased Cybertruck volume.</p>
+                    </div>
+                  </div>
+                  <!-- Timeline Node 2 -->
+                  <div class="relative">
+                    <span class="absolute -left-[31px] top-1 w-4 h-4 rounded-full border-4 border-[#050816] bg-[#00E5FF] ring-4 ring-primary/10"></span>
+                    <div class="space-y-1">
+                      <div class="flex items-center space-x-2">
+                        <span class="text-xs font-mono text-slate-500">2024</span>
+                        <span class="px-2 py-0.5 rounded bg-secondary/15 text-secondary text-[10px] font-mono">Consolidated</span>
+                      </div>
+                      <h5 class="text-sm font-medium text-white">Tesla revenue reaches $96.77B</h5>
+                      <p class="text-xs text-slate-400">Official SEC 10-K filings verify final annual revenue figures of $96.77B.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- Section: AI Insights -->
+            <section id="section-insights" class="scroll-mt-6 space-y-4">
+              <h3 class="text-xs font-mono text-slate-500 uppercase tracking-widest flex items-center">
+                <i data-lucide="lightbulb" class="w-4 h-4 mr-1.5 text-[#FFB800]"></i>AI Insights & Projections
+              </h3>
+              
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="insights-grid">
+                <!-- Insight 1 -->
+                <div class="glass-card p-6 flex items-start space-x-4 border-l-4 border-purple-500">
+                  <div class="p-2.5 rounded-lg bg-purple-500/10 text-purple-400">
+                    <i data-lucide="help-circle" class="w-5 h-5"></i>
+                  </div>
+                  <div class="space-y-1">
+                    <h5 class="text-sm font-semibold text-white">Surprising Findings</h5>
+                    <p class="text-xs text-slate-300 font-light">Despite escalating regulatory friction in Europe, Norway's sales increased by 22%, becoming Tesla's most dense market per capita.</p>
+                  </div>
+                </div>
+                <!-- Insight 2 -->
+                <div class="glass-card p-6 flex items-start space-x-4 border-l-4 border-blue-500">
+                  <div class="p-2.5 rounded-lg bg-blue-500/10 text-blue-400">
+                    <i data-lucide="activity" class="w-5 h-5"></i>
+                  </div>
+                  <div class="space-y-1">
+                    <h5 class="text-sm font-semibold text-white">Hidden Patterns</h5>
+                    <p class="text-xs text-slate-300 font-light">There is a 92% statistical correlation between local grid infrastructure investments and Tesla delivery surges across APAC countries.</p>
+                  </div>
+                </div>
+                <!-- Insight 3 -->
+                <div class="glass-card p-6 flex items-start space-x-4 border-l-4 border-red-500">
+                  <div class="p-2.5 rounded-lg bg-red-500/10 text-red-400">
+                    <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+                  </div>
+                  <div class="space-y-1">
+                    <h5 class="text-sm font-semibold text-white">Possible Risks</h5>
+                    <p class="text-xs text-slate-300 font-light">Escalating US-China battery material tariffs present an estimated margin risk of 4.5% to the base model sales pricing structures.</p>
+                  </div>
+                </div>
+                <!-- Insight 4 -->
+                <div class="glass-card p-6 flex items-start space-x-4 border-l-4 border-[#00FFA3]">
+                  <div class="p-2.5 rounded-lg bg-[#00FFA3]/10 text-[#00FFA3]">
+                    <i data-lucide="rocket" class="w-5 h-5"></i>
+                  </div>
+                  <div class="space-y-1">
+                    <h5 class="text-sm font-semibold text-white">Future Opportunities</h5>
+                    <p class="text-xs text-slate-300 font-light">Full expansion of FSD Beta software licensing in the UK and Australia could unlock an additional $3.2B in pure SaaS revenue margins.</p>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- Section: References & Citations -->
+            <section id="section-references" class="scroll-mt-6 space-y-4">
+              <h3 class="text-xs font-mono text-slate-500 uppercase tracking-widest flex items-center">
+                <i data-lucide="link" class="w-4 h-4 mr-1.5 text-accent"></i>References & Trust Scores
+              </h3>
+              
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="references-grid">
+                <!-- JS will inject dynamic references cards here -->
+              </div>
+            </section>
+
+            <!-- Follow-up Prompt Suggestion Buttons -->
+            <div class="follow-up-suggestions pt-4 border-t border-white/5 space-y-3">
+              <h4 class="text-xs font-mono text-slate-500">Explore Further</h4>
+              <div class="flex flex-wrap gap-2" id="follow-up-queries-container">
+                <button class="follow-up-chip" data-query="Compare Tesla revenue with BYD global sales">
+                  Compare with BYD sales
+                </button>
+                <button class="follow-up-chip" data-query="Detailed breakdown of Tesla automotive gross margins">
+                  Gross margins breakdown
+                </button>
+                <button class="follow-up-chip" data-query="How does Cybertruck production impact Tesla margins?">
+                  Cybertruck margin impact
+                </button>
+                <button class="follow-up-chip" data-query="Forecast Tesla solar energy segment revenue to 2030">
+                  Forecast energy segment
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Bottom scrolling horizontal source banner -->
+          <footer class="footer-banner border-t border-white/5 bg-[#050816]/50 py-3 px-6 overflow-hidden flex-shrink-0">
+            <div class="flex items-center space-x-4">
+              <span class="text-[10px] font-mono text-slate-500 uppercase tracking-widest flex-shrink-0">Sources Crawled</span>
+              <div class="flex-1 overflow-x-auto scrollbar-hide flex items-center space-x-6" id="horizontal-favicons-list">
+                <!-- Javascript will inject list of domains -->
+              </div>
+            </div>
+          </footer>
+
+        </div>
+
+        <!-- Right Sidebar: Interactive AI Reasoning Chat -->
+        <aside class="sidebar-right w-80 border-l border-white/5 bg-[#050816]/70 flex flex-col h-full flex-shrink-0 hidden xl:flex">
+          
+          <!-- Heading -->
+          <div class="p-4 border-b border-white/5 flex items-center justify-between">
+            <span class="flex items-center text-sm font-semibold text-white">
+              <i data-lucide="bot" class="w-4 h-4 mr-2 text-secondary animate-pulse"></i>Research Assistant
+            </span>
+            <span class="px-2 py-0.5 rounded bg-secondary/15 text-secondary text-[9px] font-mono">Cognitive Live</span>
+          </div>
+
+          <!-- Reasoner Collapse / Log -->
+          <div class="border-b border-white/5 bg-white/1">
+            <button class="w-full flex items-center justify-between px-4 py-2.5 text-xs text-slate-400 font-mono hover:text-white transition-colors" id="thinking-process-toggle">
+              <span class="flex items-center"><i data-lucide="brain" class="w-3.5 h-3.5 mr-2 text-primary"></i>Show Reasoning Process</span>
+              <i data-lucide="chevron-down" class="w-4 h-4 transform transition-transform duration-300" id="thinking-chevron"></i>
+            </button>
+            <div class="hidden overflow-hidden transition-all duration-300" id="thinking-process-log">
+              <div class="p-4 text-[11px] font-mono text-[#00E5FF] bg-black/30 border-t border-white/5 max-h-48 overflow-y-auto space-y-2" id="thought-log-container">
+                <!-- Dynamic reasoning items -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Chat Logs Area -->
+          <div class="flex-1 overflow-y-auto p-4 space-y-4" id="chat-messages-container">
+            <!-- System Welcome -->
+            <div class="chat-message assistant">
+              <div class="message-content">
+                Hello! I am your research assistant. I've aggregated 12 primary sources to compile this report. Ask me any follow-up questions about the data, margin discrepancies, or regional segments!
+              </div>
+              <span class="message-meta">Agent • Just now</span>
+            </div>
+          </div>
+
+          <!-- Assistant Typing indicator -->
+          <div class="px-4 py-2 hidden" id="chat-typing-indicator">
+            <div class="flex items-center space-x-2 text-xs font-mono text-slate-500">
+              <i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin text-secondary"></i>
+              <span>Assistant is reflecting...</span>
+            </div>
+          </div>
+
+          <!-- Chat Input -->
+          <div class="p-4 border-t border-white/5">
+            <form id="chat-form" class="flex items-center p-1 bg-white/5 border border-white/10 rounded-xl focus-within:border-secondary/50 transition-colors">
+              <input 
+                type="text" 
+                id="chat-input" 
+                placeholder="Ask about this report..." 
+                class="flex-1 bg-transparent border-none outline-none text-xs text-white p-2 placeholder-slate-500"
+                autocomplete="off"
+                required
+              />
+              <button type="submit" class="p-2 rounded-lg bg-secondary text-white hover:brightness-110 active:scale-95 transition-all">
+                <i data-lucide="send" class="w-3.5 h-3.5"></i>
+              </button>
+            </form>
+          </div>
+        </aside>
+
+      </section>
+
+    </main>
+
+  </div>
+
+  <!-- Command Palette Modal (Ctrl+K) -->
+  <div id="cmd-palette-modal" class="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm flex items-center justify-center hidden opacity-0 transition-all duration-300">
+    <div class="glass-card w-full max-w-lg p-1 overflow-hidden shadow-2xl scale-95 transition-transform duration-300" id="cmd-palette-box">
+      <!-- Input -->
+      <div class="flex items-center px-4 py-3 border-b border-white/5 space-x-2">
+        <i data-lucide="command" class="w-4 h-4 text-slate-400"></i>
+        <input 
+          type="text" 
+          id="cmd-palette-input" 
+          placeholder="Search commands (e.g. Export PDF, Settings, Reset UI)..." 
+          class="w-full bg-transparent border-none outline-none text-sm text-white placeholder-slate-500"
+        />
+        <button class="p-1 rounded hover:bg-white/5 text-slate-500" id="cmd-palette-close-btn">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <!-- Commands list -->
+      <div class="max-h-64 overflow-y-auto p-2 space-y-1 text-sm font-sans" id="cmd-palette-results">
+        <div class="cmd-item active" data-action="new-research"><i data-lucide="plus" class="w-4 h-4 mr-3 text-[#00FFA3]"></i>New Research Query<span class="cmd-shortcut">Alt+N</span></div>
+        <div class="cmd-item" data-action="export-pdf"><i data-lucide="file-text" class="w-4 h-4 mr-3 text-red-400"></i>Export Report to PDF<span class="cmd-shortcut">Alt+P</span></div>
+        <div class="cmd-item" data-action="export-md"><i data-lucide="file-code" class="w-4 h-4 mr-3 text-purple-400"></i>Export Report to Markdown<span class="cmd-shortcut">Alt+M</span></div>
+        <div class="cmd-item" data-action="toggle-settings"><i data-lucide="sliders" class="w-4 h-4 mr-3 text-cyan-400"></i>Open API Key Settings<span class="cmd-shortcut">Alt+S</span></div>
+        <div class="cmd-item" data-action="clear-history"><i data-lucide="trash-2" class="w-4 h-4 mr-3 text-rose-400"></i>Clear Search History<span class="cmd-shortcut">Alt+X</span></div>
+        <div class="cmd-item" data-action="toggle-theme"><i data-lucide="sun" class="w-4 h-4 mr-3 text-yellow-400"></i>Toggle Theme Mode<span class="cmd-shortcut">Alt+T</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings Drawer Modal (Slide-In Right) -->
+  <div id="settings-drawer" class="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm flex justify-end hidden opacity-0 transition-opacity duration-300">
+    <div class="w-full max-w-md h-full bg-[#050816] border-l border-white/10 p-6 flex flex-col justify-between shadow-2xl translate-x-full transition-transform duration-300" id="settings-drawer-box">
+      <div class="space-y-6">
+        <!-- Drawer Header -->
+        <div class="flex items-center justify-between border-b border-white/5 pb-4">
+          <span class="flex items-center text-base font-semibold text-white">
+            <i data-lucide="sliders" class="w-5 h-5 mr-2.5 text-primary"></i>API & System Settings
+          </span>
+          <button class="p-1 rounded-lg hover:bg-white/5 text-slate-400 hover:text-white" id="settings-close-btn">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+
+        <!-- Form fields -->
+        <div class="space-y-4">
+          <!-- Context.dev API Key -->
+          <div class="space-y-2">
+            <label class="text-xs font-mono text-slate-400 block">Context.dev API Key</label>
+            <div class="flex items-center p-1 bg-white/5 border border-white/10 rounded-xl focus-within:border-primary/50 transition-colors">
+              <input 
+                type="password" 
+                id="context-api-input" 
+                value="ctxt_secret_be60a4c41fb84ef6b657c85f281b3830"
+                class="flex-1 bg-transparent border-none outline-none text-xs text-white p-2"
+              />
+              <button class="p-2 text-slate-500 hover:text-white" onclick="togglePasswordVisibility('context-api-input')">
+                <i data-lucide="eye" class="w-4 h-4"></i>
+              </button>
+            </div>
+            <p class="text-[10px] text-slate-500">Provides search & scraping APIs dynamically. (Preconfigured key active)</p>
+          </div>
+
+          <!-- OpenAI API Key (Optional) -->
+          <div class="space-y-2">
+            <label class="text-xs font-mono text-slate-400 block">OpenAI API Key (Optional)</label>
+            <div class="flex items-center p-1 bg-white/5 border border-white/10 rounded-xl focus-within:border-secondary/50 transition-colors">
+              <input 
+                type="password" 
+                id="openai-api-input" 
+                placeholder="sk-proj-..."
+                class="flex-1 bg-transparent border-none outline-none text-xs text-white p-2"
+              />
+              <button class="p-2 text-slate-500 hover:text-white" onclick="togglePasswordVisibility('openai-api-input')">
+                <i data-lucide="eye" class="w-4 h-4"></i>
+              </button>
+            </div>
+            <p class="text-[10px] text-slate-500">Enable actual live OpenAI Summarization. Falls back to smart client-side synthesis if omitted.</p>
+          </div>
+
+          <!-- Search Depth Setting -->
+          <div class="space-y-2">
+            <label class="text-xs font-mono text-slate-400 block">Web Search Depth</label>
+            <select id="search-depth" class="w-full bg-white/5 border border-white/10 text-xs text-white rounded-xl p-2.5 outline-none focus:border-[#00E5FF]">
+              <option value="quick">Quick Search (3-5 sources)</option>
+              <option value="deep" selected>Deep Research (8-15 sources)</option>
+              <option value="comprehensive">Comprehensive Study (15+ sources)</option>
+            </select>
+          </div>
+
+          <!-- Graphics Engine -->
+          <div class="space-y-2">
+            <label class="text-xs font-mono text-slate-400 block">Visual Effects</label>
+            <div class="space-y-2 font-sans text-xs">
+              <label class="flex items-center space-x-2 text-slate-300">
+                <input type="checkbox" id="effects-particles" checked class="accent-primary w-4 h-4 rounded">
+                <span>Enable canvas particle engine</span>
+              </label>
+              <label class="flex items-center space-x-2 text-slate-300">
+                <input type="checkbox" id="effects-aurora" checked class="accent-secondary w-4 h-4 rounded">
+                <span>Enable animated aurora blobs</span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Drawer Footer -->
+      <div class="border-t border-white/5 pt-4 flex space-x-3">
+        <button class="flex-1 py-2.5 rounded-xl border border-white/15 hover:bg-white/5 transition-colors text-xs font-semibold text-slate-300" id="settings-reset-btn">
+          Reset Defaults
+        </button>
+        <button class="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-primary to-secondary text-white hover:brightness-110 active:scale-95 transition-all text-xs font-semibold" id="settings-save-btn">
+          Save Settings
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Image Lightbox Modal -->
+  <div id="lightbox-modal" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex flex-col items-center justify-center hidden opacity-0 transition-opacity duration-300" onclick="closeLightbox()">
+    <button class="absolute top-6 right-6 p-2 rounded-full bg-white/10 border border-white/10 text-white hover:scale-105 transition-transform" onclick="closeLightbox()">
+      <i data-lucide="x" class="w-5 h-5"></i>
+    </button>
+    <div class="max-w-4xl max-h-[80vh] px-4 flex items-center justify-center" onclick="event.stopPropagation()">
+      <img id="lightbox-img" src="" alt="" class="rounded-xl max-w-full max-h-[75vh] object-contain shadow-2xl border border-white/10">
+    </div>
+    <div class="mt-4 text-center text-slate-300" onclick="event.stopPropagation()">
+      <p id="lightbox-caption" class="text-sm font-semibold"></p>
+      <a id="lightbox-download" href="" download class="inline-flex items-center text-xs font-mono text-[#00E5FF] hover:underline mt-2">
+        <i data-lucide="download" class="w-3.5 h-3.5 mr-1"></i>Download Full Image
+      </a>
+    </div>
+  </div>
+
+  <!-- Client-side Application Logic Script -->
+  <script type="module" src="/app.js"></script>
+
+  <!-- Global scripts -->
+  <script>
+    // helper function for password reveal
+    function togglePasswordVisibility(inputId) {
+      const input = document.getElementById(inputId);
+      if (input.type === "password") {
+        input.type = "text";
+      } else {
+        input.type = "password";
+      }
+    }
+  </script>
+</body>
+</html>
